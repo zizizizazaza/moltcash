@@ -10,7 +10,7 @@ import Portfolio from './components/Portfolio';
 import RiskModal from './components/RiskModal';
 
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<Page>(Page.DASHBOARD);
+  const [currentPage, setCurrentPage] = useState<Page>(Page.MARKET);
   const [showRiskModal, setShowRiskModal] = useState(false);
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState(false);
@@ -52,17 +52,19 @@ const App: React.FC = () => {
       {/* Navbar - Refined Light Mode */}
       <nav className="sticky top-0 z-40 py-6 px-6 md:px-12 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="flex items-center gap-12">
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setCurrentPage(Page.DASHBOARD)}>
+          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setCurrentPage(Page.MARKET)}>
             <div className="w-8 h-8 bg-black rounded flex items-center justify-center font-black text-white group-hover:rotate-12 transition-transform">L</div>
             <span className="text-xl font-bold tracking-tight text-black uppercase">LOKA</span>
           </div>
 
           <div className="hidden lg:flex items-center gap-10">
+            {/* 
             <NavButton
               active={currentPage === Page.DASHBOARD}
               onClick={() => setCurrentPage(Page.DASHBOARD)}
               label="Protocol"
             />
+             */}
             <NavButton
               active={currentPage === Page.SWAP}
               onClick={() => setCurrentPage(Page.SWAP)}
@@ -71,7 +73,7 @@ const App: React.FC = () => {
             <NavButton
               active={currentPage === Page.MARKET}
               onClick={() => setCurrentPage(Page.MARKET)}
-              label="Market"
+              label="Cash Flow"
             />
             <NavButton
               active={false}
@@ -101,7 +103,7 @@ const App: React.FC = () => {
 
       {/* Mobile Nav */}
       <div className="md:hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-50 glass rounded-full p-2 flex gap-1 shadow-2xl bg-white/90">
-        <MobileNavButton active={currentPage === Page.DASHBOARD} onClick={() => setCurrentPage(Page.DASHBOARD)} icon={<Icons.Dashboard />} />
+        {/* <MobileNavButton active={currentPage === Page.DASHBOARD} onClick={() => setCurrentPage(Page.DASHBOARD)} icon={<Icons.Dashboard />} /> */}
         <MobileNavButton active={currentPage === Page.SWAP} onClick={() => setCurrentPage(Page.SWAP)} icon={<Icons.Swap />} />
         <MobileNavButton active={currentPage === Page.MARKET} onClick={() => setCurrentPage(Page.MARKET)} icon={<Icons.Market />} />
         <MobileNavButton active={false} onClick={triggerComingSoon} icon={<span className="text-[10px] font-bold">RWA</span>} />

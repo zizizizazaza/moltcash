@@ -277,7 +277,7 @@ const AssetDetail: React.FC<{ asset: MarketAsset; onClose: () => void }> = ({ as
         <div className="flex-1 space-y-8">
           <header className="space-y-6">
             <nav className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-              <button onClick={onClose} className="hover:text-black transition-colors">Market</button>
+              <button onClick={onClose} className="hover:text-black transition-colors">Cash Flow</button>
               <span>/</span>
               <span className="text-gray-300">{asset.category}</span>
               <span>/</span>

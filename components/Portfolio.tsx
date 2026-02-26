@@ -31,7 +31,7 @@ const Portfolio: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto animate-fadeIn pb-24 px-4 space-y-10">
-      
+
       {/* 1. Global Header */}
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-4 group cursor-pointer">
@@ -55,10 +55,10 @@ const Portfolio: React.FC = () => {
 
       {/* 2-Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        
+
         {/* LEFT PANEL: Growth & Allocation (7/12) */}
         <div className="lg:col-span-7 space-y-12">
-          
+
           {/* Growth Chart Section */}
           <section className="glass rounded-[40px] p-8 bg-white relative overflow-hidden shadow-sm">
             <div className="flex justify-between items-center mb-8">
@@ -74,12 +74,12 @@ const Portfolio: React.FC = () => {
                 <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#000000" stopOpacity={0.08}/>
-                      <stop offset="95%" stopColor="#000000" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#000000" stopOpacity={0.08} />
+                      <stop offset="95%" stopColor="#000000" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="1 6" vertical={false} stroke="#00000010" />
-                  <Tooltip 
+                  <Tooltip
                     content={({ active, payload }) => {
                       if (active && payload && payload.length) {
                         return (
@@ -93,12 +93,12 @@ const Portfolio: React.FC = () => {
                       return null;
                     }}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="total" 
-                    stroke="#000000" 
-                    fillOpacity={1} 
-                    fill="url(#colorTotal)" 
+                  <Area
+                    type="monotone"
+                    dataKey="total"
+                    stroke="#000000"
+                    fillOpacity={1}
+                    fill="url(#colorTotal)"
                     strokeWidth={3}
                     animationDuration={2500}
                   />
@@ -111,13 +111,13 @@ const Portfolio: React.FC = () => {
           <section className="space-y-6">
             <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest px-2">Your Allocation</h4>
             <div className="grid grid-cols-1 gap-4">
-              <AllocationCard 
-                title="AIUSD" 
-                desc="Treasury Backed Stablecoin" 
-                apy="5.24% APY · 100% Verified" 
-                amount="$10,340.00" 
+              <AllocationCard
+                title="AIUSD"
+                desc="Treasury Backed Stablecoin"
+                apy="5.24% APY · 100% Verified"
+                amount="$10,340.00"
                 earnings="+$340.00"
-                icon={<div className="w-6 h-6 bg-black rounded flex items-center justify-center font-black text-white text-[10px]">A</div>} 
+                icon={<div className="w-6 h-6 bg-black rounded flex items-center justify-center font-black text-white text-[10px]">A</div>}
               />
             </div>
           </section>
@@ -126,25 +126,25 @@ const Portfolio: React.FC = () => {
           <section className="space-y-6">
             <div className="flex items-center justify-between px-2">
               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Recent Activity</h4>
-              <button className="text-[10px] font-bold text-gray-500 uppercase hover:text-black">View All</button>
+              <button className="text-[10px] font-bold text-gray-500  hover:text-black">View All</button>
             </div>
             <div className="glass rounded-[32px] overflow-hidden bg-white shadow-sm border border-gray-100">
-              <ActivityItem 
-                title="Daily Interest Payout" 
-                time="Today, 08:00 AM" 
-                amount="+$5.24" 
+              <ActivityItem
+                title="Daily Interest Payout"
+                time="Today, 08:00 AM"
+                amount="+$5.24"
                 type="INTEREST"
               />
-              <ActivityItem 
-                title="USDC Deposit" 
-                time="Yesterday, 04:15 PM" 
-                amount="+$1,000.00" 
+              <ActivityItem
+                title="USDC Deposit"
+                time="Yesterday, 04:15 PM"
+                amount="+$1,000.00"
                 type="DEPOSIT"
               />
-              <ActivityItem 
-                title="Daily Interest Payout" 
-                time="Jan 22, 08:00 AM" 
-                amount="+$5.10" 
+              <ActivityItem
+                title="Daily Interest Payout"
+                time="Jan 22, 08:00 AM"
+                amount="+$5.10"
                 type="INTEREST"
               />
             </div>
@@ -154,17 +154,17 @@ const Portfolio: React.FC = () => {
         {/* RIGHT PANEL: Balance & Actions (5/12) */}
         <div className="lg:col-span-5 space-y-8">
           <div className="sticky top-32 space-y-8">
-            
+
             {/* Net Worth Summary Card */}
             <div className="glass rounded-[40px] p-10 bg-white border border-gray-100 shadow-xl text-center">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] mb-4">Net Worth Balance</p>
-              <h1 
+              <h1
                 onClick={() => setIsHidden(!isHidden)}
                 className="text-5xl md:text-6xl font-bold tracking-tight text-black cursor-pointer select-none transition-all hover:scale-[1.02]"
               >
                 {isHidden ? '••••••••' : `$${balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
               </h1>
-              
+
               <div className="flex flex-col items-center mt-6 p-4 bg-gray-50 rounded-[32px] border border-gray-100">
                 <div className="flex items-center gap-1 font-mono text-green-500 font-bold text-xl">
                   <span>+</span>
@@ -180,16 +180,24 @@ const Portfolio: React.FC = () => {
 
             {/* Action Buttons Stack */}
             <div className="grid grid-cols-2 gap-4">
-              <ActionButton 
-                label="Withdraw" 
-                sub="Send Assets" 
-                icon={<Icons.Swap />} 
+              <ActionButton
+                onClick={() => {
+                  sessionStorage.setItem('pending_chat_action', 'withdraw');
+                  window.dispatchEvent(new CustomEvent('loka-nav-chat'));
+                }}
+                label="Withdraw"
+                sub="Send Assets"
+                icon={<Icons.Swap />}
               />
-              <ActionButton 
-                label="Boost" 
-                sub="Earn 8%+" 
-                icon={<Icons.Flash />} 
-                highlight 
+              <ActionButton
+                onClick={() => {
+                  sessionStorage.setItem('pending_chat_action', 'deposit');
+                  window.dispatchEvent(new CustomEvent('loka-nav-chat'));
+                }}
+                label="Deposit"
+                sub="Earn 8%+"
+                icon={<Icons.Flash />}
+                highlight
               />
             </div>
 
@@ -210,12 +218,11 @@ const Portfolio: React.FC = () => {
   );
 };
 
-const ActionButton: React.FC<{ label: string; sub: string; icon: React.ReactNode; primary?: boolean; highlight?: boolean }> = ({ label, sub, icon, primary, highlight }) => (
-  <button className={`flex flex-col items-center justify-center p-6 rounded-[32px] transition-all group w-full ${
-    primary ? 'bg-black text-white shadow-xl hover:bg-gray-800' : 
-    highlight ? 'bg-white border-2 border-green-500/20 text-black shadow-lg shadow-green-500/5 hover:bg-green-50' :
-    'bg-white glass text-black hover:bg-gray-50 shadow-md border-gray-100'
-  }`}>
+const ActionButton: React.FC<{ label: string; sub: string; icon: React.ReactNode; primary?: boolean; highlight?: boolean; onClick?: () => void }> = ({ label, sub, icon, primary, highlight, onClick }) => (
+  <button onClick={onClick} className={`flex flex-col items-center justify-center p-6 rounded-[32px] transition-all group w-full ${primary ? 'bg-black text-white shadow-xl hover:bg-gray-800' :
+      highlight ? 'bg-white border-2 border-green-500/20 text-black shadow-lg shadow-green-500/5 hover:bg-green-50' :
+        'bg-white glass text-black hover:bg-gray-50 shadow-md border-gray-100'
+    }`}>
     <div className={`mb-3 transition-transform group-hover:-translate-y-1 ${primary ? 'text-white' : highlight ? 'text-green-500' : 'text-gray-400'}`}>
       {icon}
     </div>
@@ -224,14 +231,14 @@ const ActionButton: React.FC<{ label: string; sub: string; icon: React.ReactNode
   </button>
 );
 
-const AllocationCard: React.FC<{ 
-  title: string; 
-  desc: string; 
-  apy: string; 
-  amount: string; 
-  earnings: string; 
-  icon: React.ReactNode; 
-  progress?: string 
+const AllocationCard: React.FC<{
+  title: string;
+  desc: string;
+  apy: string;
+  amount: string;
+  earnings: string;
+  icon: React.ReactNode;
+  progress?: string
 }> = ({ title, desc, apy, amount, earnings, icon, progress }) => (
   <div className="glass p-6 rounded-[32px] bg-white flex items-center justify-between hover:border-black/20 transition-all cursor-pointer group shadow-sm border-gray-100">
     <div className="flex items-center gap-5">

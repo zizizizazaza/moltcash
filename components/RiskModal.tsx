@@ -39,7 +39,7 @@ const RiskModal: React.FC<RiskModalProps> = ({ onAccept, onClose }) => {
         </div>
         <button
           onClick={onAccept}
-          className="w-full py-5 bg-black text-white rounded-full font-bold uppercase text-[11px] tracking-[0.3em] hover:bg-gray-800 transition-all shadow-lg"
+          className="w-full py-5 bg-black text-white rounded-full font-bold  text-[11px] tracking-[0.3em] hover:bg-gray-800 transition-all shadow-lg"
         >
           AGREE & CONTINUE
         </button>

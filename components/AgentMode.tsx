@@ -30,7 +30,7 @@ const AgentMode: React.FC = () => {
 
             <button 
               onClick={generateKey}
-              className="mt-12 w-full py-6 rounded-full bg-black text-white font-bold uppercase text-[11px] tracking-[0.3em] hover:bg-gray-800 transition-all shadow-lg"
+              className="mt-12 w-full py-6 rounded-full bg-black text-white font-bold  text-[11px] tracking-[0.3em] hover:bg-gray-800 transition-all shadow-lg"
             >
               {apiKey ? 'Rotate Credentials' : 'Provision Agent Key'}
             </button>

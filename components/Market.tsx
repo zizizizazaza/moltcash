@@ -757,17 +757,19 @@ const AssetDetail: React.FC<{ asset: MarketAsset; onClose: () => void }> = ({ as
                 </div>
               </div>
 
-              <button className="w-full py-4 bg-black text-white rounded-full font-black uppercase text-[10px] tracking-[0.3em] hover:bg-gray-800 transition-all shadow-lg active:scale-95">
+              <button className="w-full py-4 bg-black text-white rounded-full font-black  text-[10px] tracking-[0.3em] hover:bg-gray-800 transition-all shadow-lg active:scale-95">
                 Invest Now
               </button>
 
-              <div className="flex flex-col items-center gap-2 pt-1">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-1 h-1 rounded-full bg-purple-500 animate-pulse" />
-                  <span className="text-[8px] font-black uppercase tracking-widest text-purple-600">Loka Score: AAA (Safe)</span>
-                </div>
-                <p className="text-[7px] text-gray-300 uppercase font-medium tracking-widest text-center">Soft Cap Reached: Issuance Confirmed</p>
-              </div>
+              <button
+                onClick={() => {
+                  sessionStorage.setItem('pending_chat_project', asset.title);
+                  window.dispatchEvent(new CustomEvent('loka-nav-chat'));
+                }}
+                className="w-full py-4 bg-white text-black border border-gray-200 rounded-full font-black uppercase text-[10px] tracking-[0.3em] hover:bg-gray-50 transition-all active:scale-95"
+              >
+                + Add To Chat
+              </button>
             </div>
           </div>
         </div>

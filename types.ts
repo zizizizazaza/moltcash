@@ -45,9 +45,11 @@ export interface HistoryItem {
 }
 
 export enum Page {
+  LANDING = 'LANDING',
   DASHBOARD = 'DASHBOARD',
   SWAP = 'SWAP',
   MARKET = 'MARKET',
   PORTFOLIO = 'PORTFOLIO',
-  AGENT = 'AGENT'
+  AGENT = 'AGENT',
+  CHAT = 'CHAT'
 }

@@ -7,11 +7,15 @@ import Swap from './components/Swap';
 import Market from './components/Market';
 import AgentMode from './components/AgentMode';
 import Portfolio from './components/Portfolio';
+import Chat from './components/Chat';
 import RiskModal from './components/RiskModal';
+import AuthModal from './components/AuthModal';
+import Landing from './components/Landing';
 
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<Page>(Page.MARKET);
+  const [currentPage, setCurrentPage] = useState<Page>(Page.LANDING);
   const [showRiskModal, setShowRiskModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState(false);
 
@@ -20,6 +24,10 @@ const App: React.FC = () => {
     if (!hasSeenRisk) {
       setShowRiskModal(true);
     }
+
+    const handleNav = () => setCurrentPage(Page.CHAT);
+    window.addEventListener('loka-nav-chat', handleNav);
+    return () => window.removeEventListener('loka-nav-chat', handleNav);
   }, []);
 
   const triggerComingSoon = () => {
@@ -33,11 +41,18 @@ const App: React.FC = () => {
   };
 
   const connectWallet = () => {
-    setIsWalletConnected(true);
+    setShowAuthModal(true);
   };
 
+  const handleLogin = () => {
+    setIsWalletConnected(true);
+    setShowAuthModal(false);
+  };
+
+  const isChatPage = currentPage === Page.CHAT;
+
   return (
-    <div className="min-h-screen flex flex-col selection:bg-black selection:text-white bg-[#fafafa] overflow-x-hidden">
+    <div className="min-h-screen flex flex-col selection:bg-black selection:text-white overflow-x-hidden bg-[#fafafa]">
       {/* Toast Notification */}
       <div className={`fixed top-6 right-6 z-[100] transition-all duration-500 transform ${showComingSoon ? 'translate-x-0 opacity-100' : 'translate-x-12 opacity-0 pointer-events-none'
         }`}>
@@ -49,22 +64,27 @@ const App: React.FC = () => {
 
       {showRiskModal && <RiskModal onAccept={acceptRisk} onClose={() => setShowRiskModal(false)} />}
 
+      {showAuthModal && (
+        <AuthModal
+          onLogin={handleLogin}
+          onClose={() => setShowAuthModal(false)}
+        />
+      )}
+
       {/* Navbar - Refined Light Mode */}
       <nav className="sticky top-0 z-40 py-6 px-6 md:px-12 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="flex items-center gap-12">
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setCurrentPage(Page.MARKET)}>
-            <div className="w-8 h-8 bg-black rounded flex items-center justify-center font-black text-white group-hover:rotate-12 transition-transform">L</div>
-            <span className="text-xl font-bold tracking-tight text-black uppercase">LOKA</span>
+          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setCurrentPage(Page.LANDING)}>
+            <div className="w-8 h-8 bg-black rounded flex items-center justify-center font-black text-white group-hover:rotate-12 transition-transform">M</div>
+            <span className="text-xl font-bold tracking-tight text-black">MoltCash</span>
           </div>
 
           <div className="hidden lg:flex items-center gap-10">
-            {/* 
             <NavButton
-              active={currentPage === Page.DASHBOARD}
-              onClick={() => setCurrentPage(Page.DASHBOARD)}
-              label="Protocol"
+              active={currentPage === Page.CHAT}
+              onClick={() => setCurrentPage(Page.CHAT)}
+              label="Chat"
             />
-             */}
             <NavButton
               active={currentPage === Page.SWAP}
               onClick={() => setCurrentPage(Page.SWAP)}
@@ -75,11 +95,7 @@ const App: React.FC = () => {
               onClick={() => setCurrentPage(Page.MARKET)}
               label="Cash Flow"
             />
-            <NavButton
-              active={false}
-              onClick={triggerComingSoon}
-              label="RWA"
-            />
+
             <NavButton
               active={currentPage === Page.PORTFOLIO}
               onClick={() => setCurrentPage(Page.PORTFOLIO)}
@@ -88,10 +104,30 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => {
+              setCurrentPage(Page.CHAT);
+              setTimeout(() => window.dispatchEvent(new CustomEvent('loka-open-modal', { detail: 'deposit' })), 50);
+            }}
+            className="px-4 py-2 rounded-lg text-xs font-bold tracking-wide transition-all border border-gray-200 bg-white text-gray-600 hover:border-black hover:text-black hover:shadow-sm flex items-center gap-1.5"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m0 0l-4-4m4 4l4-4" /></svg>
+            Deposit
+          </button>
+          <button
+            onClick={() => {
+              setCurrentPage(Page.CHAT);
+              setTimeout(() => window.dispatchEvent(new CustomEvent('loka-open-modal', { detail: 'withdraw' })), 50);
+            }}
+            className="px-4 py-2 rounded-lg text-xs font-bold tracking-wide transition-all border border-gray-200 bg-white text-gray-600 hover:border-black hover:text-black hover:shadow-sm flex items-center gap-1.5"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 20V4m0 0l-4 4m4-4l4 4" /></svg>
+            Withdraw
+          </button>
           <button
             onClick={connectWallet}
-            className={`px-6 py-2 rounded-full text-xs font-bold tracking-widest transition-all uppercase border ${isWalletConnected
+            className={`px-6 py-2 rounded-full text-xs font-bold tracking-widest transition-all border ${isWalletConnected
               ? 'bg-gray-50 text-gray-500 border-gray-200'
               : 'bg-black text-white hover:bg-gray-800 shadow-md'
               }`}
@@ -103,19 +139,18 @@ const App: React.FC = () => {
 
       {/* Mobile Nav */}
       <div className="md:hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-50 glass rounded-full p-2 flex gap-1 shadow-2xl bg-white/90">
-        {/* <MobileNavButton active={currentPage === Page.DASHBOARD} onClick={() => setCurrentPage(Page.DASHBOARD)} icon={<Icons.Dashboard />} /> */}
+        <MobileNavButton active={currentPage === Page.CHAT} onClick={() => setCurrentPage(Page.CHAT)} icon={<Icons.Chat />} />
         <MobileNavButton active={currentPage === Page.SWAP} onClick={() => setCurrentPage(Page.SWAP)} icon={<Icons.Swap />} />
         <MobileNavButton active={currentPage === Page.MARKET} onClick={() => setCurrentPage(Page.MARKET)} icon={<Icons.Market />} />
-        <MobileNavButton active={false} onClick={triggerComingSoon} icon={<span className="text-[10px] font-bold">RWA</span>} />
         <MobileNavButton active={currentPage === Page.PORTFOLIO} onClick={() => setCurrentPage(Page.PORTFOLIO)} icon={<Icons.Portfolio />} />
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 container mx-auto px-6 py-12">
-        {currentPage !== Page.PORTFOLIO && currentPage !== Page.MARKET && (
+      <main className={`flex-1 overflow-y-auto ${isChatPage ? 'p-0' : 'container mx-auto px-6 py-12'}`}>
+        {currentPage !== Page.PORTFOLIO && currentPage !== Page.MARKET && currentPage !== Page.CHAT && currentPage !== Page.LANDING && (
           <div className="mb-12">
             <h1 className="font-serif text-5xl md:text-7xl mb-4 text-black">
-              {currentPage === Page.DASHBOARD && "Loka Protocol"}
+              {currentPage === Page.DASHBOARD && "MoltCash Protocol"}
               {currentPage === Page.SWAP && "Mint & Redeem."}
               {currentPage === Page.AGENT && "Agentic Stack."}
             </h1>
@@ -132,22 +167,26 @@ const App: React.FC = () => {
         {currentPage === Page.MARKET && <Market />}
         {currentPage === Page.AGENT && <AgentMode />}
         {currentPage === Page.PORTFOLIO && <Portfolio />}
+        {currentPage === Page.CHAT && <Chat />}
+        {currentPage === Page.LANDING && <Landing />}
       </main>
 
       {/* Footer with Manual Trigger */}
-      <footer className="py-12 border-t border-gray-100 text-center px-6">
-        <div className="flex flex-col items-center gap-4">
-          <button
-            onClick={() => setShowRiskModal(true)}
-            className="text-gray-400 text-[9px] uppercase tracking-[0.4em] font-bold hover:text-black transition-colors"
-          >
-            Terms & Disclaimer
-          </button>
-          <p className="text-gray-300 text-[10px] uppercase tracking-[0.4em] font-medium">
-            Powered by Setu Infrastructure &bull; 2026 Loka Protocol
-          </p>
-        </div>
-      </footer>
+      {currentPage !== Page.CHAT && (
+        <footer className="py-12 border-t border-gray-100 text-center px-6">
+          <div className="flex flex-col items-center gap-4">
+            <button
+              onClick={() => setShowRiskModal(true)}
+              className="text-gray-400 text-[9px] uppercase tracking-[0.4em] font-bold hover:text-black transition-colors"
+            >
+              Terms & Disclaimer
+            </button>
+            <p className="text-gray-300 text-[10px] uppercase tracking-[0.4em] font-medium">
+              Powered by Setu Infrastructure &bull; 2026 MoltCash Protocol
+            </p>
+          </div>
+        </footer>
+      )}
     </div>
   );
 };
@@ -155,7 +194,7 @@ const App: React.FC = () => {
 const NavButton: React.FC<{ active: boolean; label: string; onClick: () => void }> = ({ active, label, onClick }) => (
   <button
     onClick={onClick}
-    className={`text-[11px] font-bold tracking-[0.2em] transition-all py-1 border-b-2 ${active ? 'text-black border-black' : 'text-gray-400 hover:text-black border-transparent'
+    className={`text-sm font-bold tracking-wide transition-all py-1 border-b-2 ${active ? 'text-black border-black' : 'text-gray-400 hover:text-black border-transparent'
       }`}
   >
     {label}

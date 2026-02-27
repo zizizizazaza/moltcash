@@ -17,11 +17,11 @@ const MOCK_ASSETS: MarketAsset[] = [
     apy: 15.5,
     durationDays: 60,
     creditScore: 820,
-    status: 'Fundraising',
+    status: 'Funded',
     targetAmount: 500000,
-    raisedAmount: 375420,
+    raisedAmount: 500000,
     backersCount: 124,
-    remainingCap: 124580,
+    remainingCap: 0,
     coverageRatio: 1.5,
     verifiedSource: 'Stripe API',
     description: 'We are ComputeDAO, operating over 500 GPUs in Singapore. This funding batch will be used to prepay electricity and bandwidth expansion for our next month of generative AI rendering contracts.',
@@ -32,7 +32,7 @@ const MOCK_ASSETS: MarketAsset[] = [
       { month: 'Dec', amount: 1100000 },
       { month: 'Jan', amount: 1200000 }
     ],
-    coverImage: 'https://images.unsplash.com/photo-1591405351990-4726e33df58d?auto=format&fit=crop&q=80&w=800'
+    coverImage: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=800'
   },
   {
     id: '2',
@@ -104,7 +104,7 @@ const MOCK_ASSETS: MarketAsset[] = [
     apy: 12.4,
     durationDays: 45,
     creditScore: 710,
-    status: 'Fundraising',
+    status: 'Failed',
     targetAmount: 150000,
     raisedAmount: 45000,
     backersCount: 230,
@@ -125,12 +125,23 @@ const MOCK_ASSETS: MarketAsset[] = [
 
 const Market: React.FC = () => {
   const [selectedAsset, setSelectedAsset] = useState<MarketAsset | null>(null);
-  const [filter, setFilter] = useState<'All' | 'Compute' | 'SaaS' | 'E-commerce'>('All');
+  const [filter, setFilter] = useState<'All' | 'Fundraising' | 'Funded' | 'Failed'>('All');
 
   const filteredAssets = useMemo(() => {
     if (filter === 'All') return MOCK_ASSETS;
-    return MOCK_ASSETS.filter(a => a.category === filter);
+    return MOCK_ASSETS.filter(a => a.status === filter);
   }, [filter]);
+
+  useEffect(() => {
+    const handleOpenAsset = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const match = MOCK_ASSETS.find(a => a.title.includes(customEvent.detail));
+      if (match) setSelectedAsset(match);
+    };
+
+    window.addEventListener('loka-open-asset', handleOpenAsset);
+    return () => window.removeEventListener('loka-open-asset', handleOpenAsset);
+  }, []);
 
   if (selectedAsset) {
     return (
@@ -147,14 +158,14 @@ const Market: React.FC = () => {
       <section className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h2 className="font-serif text-5xl text-black italic">Cash Flow Market.</h2>
-          <p className="text-gray-400 mt-2 font-medium">Trade future dollar income notes at a discount.</p>
+          <p className="text-gray-400 mt-2 font-medium">Invest in the future cash flow of verified businesses.</p>
         </div>
         <div className="flex bg-white glass p-1 rounded-full border border-gray-100 shadow-sm overflow-x-auto">
-          {['All', 'Compute', 'SaaS', 'E-commerce'].map(cat => (
+          {['All', 'Fundraising', 'Funded', 'Failed'].map(cat => (
             <button
               key={cat}
               onClick={() => setFilter(cat as any)}
-              className={`px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${filter === cat ? 'bg-black text-white shadow-md' : 'text-gray-400 hover:text-black'
+              className={`px-6 py-2 rounded-full text-xs font-bold tracking-wide transition-all whitespace-nowrap ${filter === cat ? 'bg-black text-white shadow-md' : 'text-gray-500 hover:text-black hover:bg-gray-50'
                 }`}
             >
               {cat}
@@ -196,9 +207,9 @@ const AssetCard: React.FC<{ asset: MarketAsset; onClick: () => void }> = ({ asse
 
         {/* Badges */}
         <div className="absolute top-4 left-4">
-          <div className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-lg ${asset.status === 'Ending Soon' ? 'bg-orange-500 text-white' : 'bg-white text-black'
+          <div className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-lg ${asset.status === 'Ending Soon' ? 'bg-orange-500 text-white' : asset.status === 'Funded' ? 'bg-green-500 text-white' : asset.status === 'Failed' ? 'bg-red-500 text-white' : 'bg-white text-black'
             }`}>
-            {asset.status === 'Fundraising' ? '🔥 Fundraising' : '⏳ Ending Soon'}
+            {asset.status === 'Fundraising' ? '🔥 Fundraising' : asset.status === 'Ending Soon' ? '⏳ Ending Soon' : asset.status === 'Funded' ? '✅ Funded' : asset.status === 'Failed' ? '❌ Failed' : asset.status}
           </div>
         </div>
       </div>
@@ -262,8 +273,9 @@ const AssetCard: React.FC<{ asset: MarketAsset; onClick: () => void }> = ({ asse
 };
 
 const AssetDetail: React.FC<{ asset: MarketAsset; onClose: () => void }> = ({ asset, onClose }) => {
-  const [purchaseQty, setPurchaseQty] = useState('1000');
+  const [purchaseQty, setPurchaseQty] = useState('');
   const [activeTab, setActiveTab] = useState<'STORY' | 'AGREEMENT' | 'FINANCIALS'>('STORY');
+  const [txTab, setTxTab] = useState<'buy' | 'sell'>('buy');
 
   const progress = Math.min(100, (asset.raisedAmount / asset.targetAmount) * 100);
   const faceValueEquiv = parseFloat(purchaseQty) / (asset.askPrice / asset.faceValue) || 0;
@@ -298,8 +310,8 @@ const AssetDetail: React.FC<{ asset: MarketAsset; onClose: () => void }> = ({ as
           <div className="flex border-b border-gray-100 gap-10">
             {[
               { id: 'STORY', label: 'Background' },
-              { id: 'AGREEMENT', label: 'The Agreement' },
-              { id: 'FINANCIALS', label: 'Financial Health' }
+              { id: 'FINANCIALS', label: 'Financial Health' },
+              { id: 'AGREEMENT', label: 'Rules' }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -423,7 +435,74 @@ const AssetDetail: React.FC<{ asset: MarketAsset; onClose: () => void }> = ({ as
 
             {activeTab === 'AGREEMENT' && (
               <div className="space-y-12 animate-fadeIn">
-                {/* 1. Asset Structure Flow */}
+                {/* 1. Fundraising Mechanics */}
+                <section className="space-y-6">
+                  <h3 className="text-base font-bold text-black">Campaign Rules & Mechanics</h3>
+                  <div className="p-8 bg-white border border-gray-100 rounded-3xl shadow-sm space-y-8">
+                    {/* Visual Timeline */}
+                    <div className="relative pt-6 pb-2">
+                      {/* Background Bar */}
+                      <div className="absolute top-8 left-[16%] right-[16%] h-1 bg-gray-100 rounded-full" />
+                      {/* Progress Bar */}
+                      <div className="absolute top-8 left-[16%] h-1 bg-[#00E676] transition-all duration-1000 rounded-full" style={{ width: `${progress * 0.68}%` }} />
+
+                      <div className="relative flex justify-between z-10 w-full">
+                        {/* Step 1 */}
+                        <div className="flex flex-col items-center w-1/3 text-center space-y-3">
+                          <div className="w-5 h-5 rounded-full bg-white border-4 border-gray-200 shadow-sm relative">
+                            <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[9px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">Start</span>
+                          </div>
+                          <div>
+                            <h4 className="text-[11px] font-black uppercase tracking-widest text-black mb-1">Fundraising</h4>
+                            <p className="text-[10px] text-gray-500 font-medium px-2 leading-relaxed">Freely deposit or withdraw USDC.</p>
+                          </div>
+                        </div>
+
+                        {/* Step 2 */}
+                        <div className="flex flex-col items-center w-1/3 text-center space-y-3">
+                          <div className="w-5 h-5 rounded-full bg-white border-4 border-black shadow-sm relative">
+                            <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[9px] font-black uppercase tracking-widest text-black whitespace-nowrap">${((asset.targetAmount * 0.5) / 1000).toFixed(0)}k</span>
+                          </div>
+                          <div>
+                            <h4 className="text-[11px] font-black uppercase tracking-widest text-black mb-1">Success Point</h4>
+                            <p className="text-[10px] text-gray-500 font-medium px-2 leading-relaxed">Goal met. Campaign secures funding.</p>
+                          </div>
+                        </div>
+
+                        {/* Step 3 */}
+                        <div className="flex flex-col items-center w-1/3 text-center space-y-3">
+                          <div className="w-5 h-5 rounded-full bg-white border-4 border-gray-200 shadow-sm relative">
+                            <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[9px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">${(asset.targetAmount / 1000).toFixed(0)}k</span>
+                          </div>
+                          <div>
+                            <h4 className="text-[11px] font-black uppercase tracking-widest text-black mb-1">Lock & Deploy</h4>
+                            <p className="text-[10px] text-gray-500 font-medium px-2 leading-relaxed">Pool locked immediately. Yield begins.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Conditions */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 border-t border-gray-100">
+                      <div className="flex gap-4 p-5 bg-green-50/50 rounded-2xl border border-green-100/50">
+                        <div className="text-xl" style={{ marginTop: '2px' }}>💸</div>
+                        <div>
+                          <h4 className="text-[11px] font-black uppercase tracking-widest text-black mb-1">If Campaign Succeeds</h4>
+                          <p className="text-[10px] text-gray-500 leading-relaxed font-medium">Funds are locked. Guaranteed payout rules execute to distribute principal and yield (e.g., monthly) direct to wallet.</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-4 p-5 bg-red-50/40 rounded-2xl border border-red-100/50">
+                        <div className="text-xl" style={{ marginTop: '2px' }}>↩️</div>
+                        <div>
+                          <h4 className="text-[11px] font-black uppercase tracking-widest text-black mb-1">If Campaign Fails</h4>
+                          <p className="text-[10px] text-gray-500 leading-relaxed font-medium">Should the soft cap be missed before deadline, smart contracts auto-refund 100% of participants' capital safety.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                {/* 2. Asset Structure Flow */}
                 <section className="space-y-8">
                   <h3 className="text-base font-bold text-black">Fund Flow & Asset Structure</h3>
                   <div className="p-10 bg-gray-50 rounded-[32px] border border-gray-100 flex flex-wrap items-center justify-center gap-x-4 gap-y-8 text-center relative overflow-hidden">
@@ -449,7 +528,7 @@ const AssetDetail: React.FC<{ asset: MarketAsset; onClose: () => void }> = ({ as
                   </div>
                 </section>
 
-                {/* 2. Key Rights & Protections */}
+                {/* 3. Key Rights & Protections */}
                 <section className="space-y-6">
                   <h3 className="text-base font-bold text-black">Key Rights & Protections</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -709,7 +788,7 @@ const AssetDetail: React.FC<{ asset: MarketAsset; onClose: () => void }> = ({ as
                 </div>
                 <div className="flex justify-between text-[9px] font-black uppercase tracking-widest">
                   <span className="text-black">{progress.toFixed(0)}% funded</span>
-                  <span className="text-orange-500">12 Days to go</span>
+                  <span className={asset.status === 'Funded' ? "text-green-500" : asset.status === 'Failed' ? "text-red-500" : "text-orange-500"}>{asset.status === 'Funded' ? 'Successfully Funded' : asset.status === 'Failed' ? 'Campaign Failed' : '12 Days to go'}</span>
                 </div>
               </div>
 
@@ -725,56 +804,106 @@ const AssetDetail: React.FC<{ asset: MarketAsset; onClose: () => void }> = ({ as
             </header>
 
             {/* Transaction Engine */}
-            <div className="space-y-5">
-              <div className="p-6 bg-gray-50 rounded-2xl border-2 border-transparent focus-within:border-black transition-all shadow-inner relative overflow-hidden group">
-                <div className="relative z-10">
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-[8px] font-black uppercase tracking-widest text-gray-400">Back this Project</span>
-                    <span className="px-1.5 py-0.5 bg-white text-black text-[7px] font-black rounded shadow-sm italic uppercase tracking-tighter">{(((asset.faceValue - asset.askPrice) / asset.faceValue) * 100).toFixed(1)}% OFF</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg font-serif italic text-gray-300">USDC</span>
-                    <input
-                      type="number"
-                      value={purchaseQty}
-                      onChange={(e) => setPurchaseQty(e.target.value)}
-                      className="bg-transparent text-3xl font-serif italic text-black w-full outline-none"
-                    />
-                  </div>
+            {asset.status === 'Funded' ? (
+              <div className="space-y-4">
+                <div className="p-6 bg-[#00E676]/5 border border-[#00E676]/20 rounded-2xl text-center space-y-2">
+                  <p className="text-[#00E676] text-2xl mb-2">🎉</p>
+                  <h4 className="text-[14px] font-bold text-black">Campaign Successful</h4>
+                  <p className="text-[10px] text-gray-500 leading-relaxed font-medium">This asset has been fully funded and is now generating yield. Trading is available on the secondary market.</p>
                 </div>
-                <div className="absolute top-0 right-0 w-20 h-20 bg-black/3 rounded-full -mr-10 -mt-10 group-focus-within:scale-150 transition-transform duration-700" />
-              </div>
-
-              {/* Calculation Table */}
-              <div className="space-y-3 px-2 font-bold uppercase tracking-widest text-[8px]">
-                <div className="flex justify-between text-gray-400">
-                  <span>Face Value at Maturity</span>
-                  <span className="text-black">${faceValueEquiv.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                </div>
-                <div className="flex justify-between items-center bg-[#00E676]/5 p-2.5 rounded-xl border border-[#00E676]/15">
-                  <span className="text-[#00E676]">Net Profit</span>
-                  <span className="text-[#00E676] text-[11px]">+${netProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                {/* Show user's investment if this is the ComputeDAO asset */}
+                <div className="p-5 bg-gray-50 rounded-2xl border border-gray-100 space-y-3">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Your Position</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[11px] font-bold text-gray-500">Initial Investment</span>
+                    <span className="text-[13px] font-black text-black">{asset.title.includes('ComputeDAO') ? '$5,000.00' : '$0.00'}</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-[#00E676]/10 p-2.5 rounded-xl border border-[#00E676]/20">
+                    <span className="text-[10px] font-bold text-[#00E676]">Current Earnings</span>
+                    <span className="text-[11px] font-black text-[#00E676]">{asset.title.includes('ComputeDAO') ? '+$387.50' : '+$0.00'}</span>
+                  </div>
                 </div>
               </div>
+            ) : asset.status === 'Failed' ? (
+              <div className="space-y-4">
+                <div className="p-6 bg-red-500/5 border border-red-500/20 rounded-2xl text-center space-y-2">
+                  <h4 className="text-[14px] font-bold text-black">Funding Failed</h4>
+                  <p className="text-[10px] text-gray-500 leading-relaxed font-medium">This campaign did not reach its soft cap target within the specified timeframe. All locked collateral is being returned.</p>
+                </div>
+                <div className="p-5 bg-gray-50 rounded-2xl border border-gray-100 space-y-3">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Your Position</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[11px] font-bold text-gray-500">Initial Escrow</span>
+                    <span className="text-[13px] font-black text-black">$0.00</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-gray-200/50 p-2.5 rounded-xl border border-gray-200">
+                    <span className="text-[10px] font-bold text-gray-500">Refund Status</span>
+                    <span className="text-[11px] font-black text-gray-500">N/A</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                <div className="flex bg-gray-100 p-1 rounded-full mb-4">
+                  <button
+                    onClick={() => setTxTab('buy')}
+                    className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all ${txTab === 'buy' ? 'bg-black text-white shadow-sm' : 'text-gray-400 hover:text-black'
+                      }`}
+                  >
+                    Deposit
+                  </button>
+                  <button
+                    onClick={() => setTxTab('sell')}
+                    className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all ${txTab === 'sell' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-black'
+                      }`}
+                  >
+                    Withdraw
+                  </button>
+                </div>
 
-              <button className="w-full py-4 bg-black text-white rounded-full font-black  text-[10px] tracking-[0.3em] hover:bg-gray-800 transition-all shadow-lg active:scale-95">
-                Invest Now
-              </button>
+                <div className="p-6 bg-gray-50 rounded-2xl border-2 border-transparent focus-within:border-black transition-all shadow-inner relative overflow-hidden group">
+                  <div className="relative z-10">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-gray-400">{txTab === 'buy' ? 'Deposit to Escrow' : 'Withdraw from Escrow'}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg font-serif italic text-gray-300">USDC</span>
+                      <input
+                        type="number"
+                        value={purchaseQty}
+                        onChange={(e) => setPurchaseQty(e.target.value)}
+                        placeholder="0.00"
+                        className="bg-transparent text-3xl font-serif italic text-black w-full outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-black/3 rounded-full -mr-10 -mt-10 group-focus-within:scale-150 transition-transform duration-700" />
+                </div>
 
-              <button
-                onClick={() => {
-                  sessionStorage.setItem('pending_chat_project', asset.title);
-                  window.dispatchEvent(new CustomEvent('loka-nav-chat'));
-                }}
-                className="w-full py-4 bg-white text-black border border-gray-200 rounded-full font-black uppercase text-[10px] tracking-[0.3em] hover:bg-gray-50 transition-all active:scale-95"
-              >
-                + Add To Chat
-              </button>
-            </div>
+                {txTab === 'sell' && (
+                  <div className="px-2 space-y-3">
+                    <div className="flex justify-between items-center text-[10px]">
+                      <span className="font-bold text-gray-400 uppercase tracking-widest">Available Balance</span>
+                      <span className="font-black text-black text-[11px]">$0.00 USDC</span>
+                    </div>
+                    <div className="p-3 bg-orange-500/5 border border-orange-500/20 rounded-xl flex gap-3 items-start">
+                      <span className="text-orange-500 text-sm leading-none mt-0.5">⚠️</span>
+                      <p className="text-[10px] text-gray-500 font-medium leading-relaxed">
+                        Funds cannot be withdrawn once the campaign successfully reaches its target and closes.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <button className="w-full py-4 bg-black text-white rounded-full font-black text-[10px] tracking-[0.3em] hover:bg-gray-800 transition-all shadow-lg active:scale-95">
+                  Confirm
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

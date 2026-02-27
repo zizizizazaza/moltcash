@@ -10,6 +10,7 @@ import Portfolio from './components/Portfolio';
 import Chat from './components/Chat';
 import RiskModal from './components/RiskModal';
 import AuthModal from './components/AuthModal';
+import TxModal from './components/TxModal';
 import Landing from './components/Landing';
 
 const App: React.FC = () => {
@@ -26,8 +27,18 @@ const App: React.FC = () => {
     }
 
     const handleNav = () => setCurrentPage(Page.CHAT);
+    const handleNavSwap = () => setCurrentPage(Page.SWAP);
+    const handleNavMarket = () => setCurrentPage(Page.MARKET);
+
     window.addEventListener('loka-nav-chat', handleNav);
-    return () => window.removeEventListener('loka-nav-chat', handleNav);
+    window.addEventListener('loka-nav-swap', handleNavSwap);
+    window.addEventListener('loka-nav-market', handleNavMarket);
+
+    return () => {
+      window.removeEventListener('loka-nav-chat', handleNav);
+      window.removeEventListener('loka-nav-swap', handleNavSwap);
+      window.removeEventListener('loka-nav-market', handleNavMarket);
+    };
   }, []);
 
   const triggerComingSoon = () => {
@@ -71,6 +82,8 @@ const App: React.FC = () => {
         />
       )}
 
+      <TxModal />
+
       {/* Navbar - Refined Light Mode */}
       <nav className="sticky top-0 z-40 py-6 px-6 md:px-12 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="flex items-center gap-12">
@@ -107,8 +120,7 @@ const App: React.FC = () => {
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => {
-              setCurrentPage(Page.CHAT);
-              setTimeout(() => window.dispatchEvent(new CustomEvent('loka-open-modal', { detail: 'deposit' })), 50);
+              window.dispatchEvent(new CustomEvent('loka-open-modal', { detail: 'deposit' }));
             }}
             className="px-4 py-2 rounded-lg text-xs font-bold tracking-wide transition-all border border-gray-200 bg-white text-gray-600 hover:border-black hover:text-black hover:shadow-sm flex items-center gap-1.5"
           >
@@ -117,8 +129,7 @@ const App: React.FC = () => {
           </button>
           <button
             onClick={() => {
-              setCurrentPage(Page.CHAT);
-              setTimeout(() => window.dispatchEvent(new CustomEvent('loka-open-modal', { detail: 'withdraw' })), 50);
+              window.dispatchEvent(new CustomEvent('loka-open-modal', { detail: 'withdraw' }));
             }}
             className="px-4 py-2 rounded-lg text-xs font-bold tracking-wide transition-all border border-gray-200 bg-white text-gray-600 hover:border-black hover:text-black hover:shadow-sm flex items-center gap-1.5"
           >

@@ -22,7 +22,7 @@ export interface MarketAsset {
   apy: number;
   durationDays: number;
   creditScore: number;
-  status: 'Fundraising' | 'Ending Soon' | 'Sold Out' | 'Failed';
+  status: 'Fundraising' | 'Ending Soon' | 'Sold Out' | 'Failed' | 'Funded';
   targetAmount: number;
   raisedAmount: number;
   backersCount: number;
